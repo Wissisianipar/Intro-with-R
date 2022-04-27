@@ -1,0 +1,250 @@
+---
+title: "Practical Statistics"
+author: "WISSI"
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    highlight: tango
+    theme: cosmo
+    toc: yes
+    toc_float:
+      collapsed: no
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+<style>
+body {
+text-align: justify
+}
+</style>
+
+```{r setup, include=FALSE}
+# clear-up the environment
+rm(list = ls())
+
+# chunk options
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>"
+)
+
+options(scipen = 999)
+```
+
+# Practical Statistics
+
+Practical Statistics berisi kaidah statistika yang banyak diterapkan dalam praktik data science agar dapat **memahami dan mengolah data dengan tepat**. Secara umum, Practical Statistics terbagi 2,  berdasarkan kegunaannya:
+
+* **Descriptive Statistics**: menggambarkan keadaan dari sebuah data yang kita miliki.
+* **Inferential Statistics**: menyimpulkan sesuatu tentang kondisi data populasi di lapangan, berdasarkan sampel data yang kita punya.
+
+Berikut adalah mindmap dari Practical Statistics yang akan kita pelajari:
+
+```{r, out.width = "100%", echo = FALSE, fig.align = "center"}
+knitr::include_graphics("assets/PS.png")
+```
+
+# Study Case: Supermarket Analysis
+
+**1. Business Question**
+
+Pertumbuhan supermarket di kota-kota besar meningkat setiap tahunnya dan kompetisi pasar juga tinggi. Kita sebagai tim data diminta untuk **menganalisa performa supermarket** milik perusahaan. Data tersimpan dalam `supermarket.RDS` berisi data transaksi selama periode Januari - Maret 2019. Data bersumber dari [Kaggle](https://www.kaggle.com/aungpyaeap/supermarket-sales).
+
+**2. Read Data**
+
+Fungsi `readRDS()` untuk membaca file ekstensi RDS, yaitu object di R yang disimpan ke dalam sebuah file. Cara menyimpan object menjadi file RDS dengan fungsi `saveRDS()`
+
+```{r}
+# read data
+
+supermarket <- readRDS("datainput/supermarket.RDS")
+supermarket
+head(supermarket)
+tail(supermarket)
+```
+```{r}
+summary(supermarket)
+```
+Deskripsi kolom:
+
+* `invoice_id`: slip invoice id
+* `branch`: branch supermarket (A, B, C)
+* `city`: lokasi supermarket
+* `customer_type`: tipe pelanggan (Member/Normal)
+* `gender`: gender pelanggan
+* `product_line`: kategorisasi produk (Electronic accessories, Fashion accessories, Food and beverages, Health and beauty, Home and lifestyle, Sports and travel)
+* `unit_price`: harga produk dalam dollar
+* `quantity`: jumlah produk yang dibeli pelanggan
+* `tax_5`: harga pajak 5% untuk pembelian produk
+* `total`: harga total termasuk pajak
+* `date`: tanggal pembelian
+* `purchase_hour`: jam pembelian
+* `payment`: mode pembayaran (Cash, Credit card, Ewallet)
+* `cogs`: harga pokok penjualan (cost of goods sold) 
+* `gross_marginpct`: persentase margin penjualan
+* `gross_income`: gross_income dari penjualan produk
+* `rating`: rating pengalaman berbelanja pelanggan (1-10)
+
+Kita akan analisis data `supermarket` dengan Descriptive Statistics dan Inferential Statistics. 
+
+# Descriptive Statistics (DAY 1)
+
+Descriptive Statistics membantu kita **menggambarkan karakteristik** dari data, sehingga berguna dalam proses **Exploratory Data Analysis (EDA)**.
+
+* Ukuran pemusatan data (Measure of Central Tendency)
+* Ukuran penyebaran data (Measure of Spread)
+* Hubungan antar data (Variable Relationship)
+
+## Measure of Central Tendency
+
+Ukuran pemusatan data adalah **suatu nilai yang cukup untuk mewakili seluruh nilai pada data**.
+
+### Mean
+
+Cara paling umum untuk membuat perkiraan nilai tunggal dari data yang banyak adalah dengan merata-ratakannya.
+
+* Formula: 
+
+$$\frac{\sum{x_i}}{n}$$
+
+* Fungsi pada R: `mean()`
+
+**Contoh:**
+
+Berapa perkiraan `rating` untuk 1 transaksi di supermarket ini?
+
+```{r}
+supermarket <- readRDS("datainput/supermarket.RDS")
+supermarket #ini adalah cara membaca variabel supermarket yang berisi tabel supermarket
+mean(supermarket$rating) #ini adalah cara membaca nilai rata-rata dari variabel supermarket dengan field rating
+```
+
+```{r}
+# opsional: untuk membulatkan
+round(mean(supermarket$rating))
+```
+
+* Sifat nilai mean: **sensitif terhadap outlier**
+
+> Outlier adalah nilai ekstrim yang jauh dari observasi lainnya. Kurang tepat apabila menggunakan nilai mean yang diketahui ada data outliernya.
+
+**Contoh lain:**
+
+Ada sebuah supermarket lain di Indonesia yang merekap jumlah profit bulanan, dalam satuan jutaan. Mereka ingin menargetkan profit bulan ke 11 dengan menggunakan data profit 10 bulan terakhir.
+
+Dengan nilai mean:
+
+```{r}
+profit <- c(55, 50, 40, 70, 60, 45, 35, 35, 60, 1000)
+mean(profit)
+```
+
+Apakah nilai mean di atas dapat diandalkan?
+
+> Tidak dapat menjadi pusat data, karena tidak mewakili nilai profit kita.
+
+Masalah ini dapat diatasi oleh nilai median ataupun trimmed mean.
+
+### Median
+
+Median atau nilai tengah diperoleh dengan mengurutkan data terlebih dahulu kemudian mencari nilai tengah dari data.
+
+* Baik untuk data yang memiliki **outlier** atau berdistribusi **skewed** (condong kiri/kanan)
+* Fungsi pada R: `median()`
+
+Mari hitung ulang nilai pusat data `profit` dengan median:
+
+```{r}
+median(profit)
+```
+> Nilai median lebih menggambarkan keadaan data dibandingkan nilai mean.
+
+Cek distribusi data (histogram akan dibahas lebih dalam di course Data Visualization):
+
+```{r fig.height=4}
+# run chunk keseluruhan secara bersamaan
+hist(profit, breaks = 25)
+abline(v = mean(profit), col = "red")
+abline(v = median(profit), col = "blue")
+```
+
+Kesimpulan: 
+
+Pilihan lain bila dengan menggunakan **trimmed mean**, yaitu rata-rata dengan terlebih dahulu memotong `x` persen nilai terkecil dan terbesar dari data:
+
+Misal kita menggunakan trimmed mean 10%, artinya: data yang sudah diurutkan akan dipotong sebesar 10% di ujung kiri dan 10% di ujung kanan. Kemudian dihitung rata-ratanya.
+
+```{r}
+mean(profit, trim = 0.1)
+```
+
+> Penentuan nilai % trim tidak ada aturan khusus. namun untuk mempertahankan informasi dari data, penggunaan %trim sebaiknya di bawah 20%.
+
+### Modus (Mode)
+
+Modus berguna untuk mencari nilai yang paling sering muncul (frekuensi tertinggi).
+
+* Modus digunakan untuk data kategorik
+* R tidak memiliki fungsi built-in
+
+**Contoh:**
+
+Tipe `product_line` apa yang merepresentasikan data `supermarket`?
+
+Dengan kata lain: untuk masing-masing `product_line` ada berapa transaksi yang terjadi?
+
+```{r}
+data <- as.data.frame(supermarket$product)
+data
+
+#sort(table(data))
+#sort(table(supermarket$product_line))
+#help(boxplot)
+#help(mean)
+boxplot(supermarket$gross_income)
+```
+
+> Modus untuk product_line adalah Fashion accessories
+
+Kita juga dapat membuat **fungsi custom** untuk mendapatkan nilai modus:
+
+```{r}
+# run chunk keseluruhan secara bersamaan
+most <- function(x){
+  table_x <- table(x) # membuat tabel frekuensi
+  name <- names(sort(table_x, decreasing = TRUE)) # mengurutkan tabel frekuensi secara decreasing
+  name[1] # mengambil kategori dengan frekuensi terbesar
+}
+```
+
+Menggunakan fungsi `most()`:
+
+```{r}
+most(supermarket$product_line)
+```
+
+### (Additional) Central of tendency for missing value imputation
+
+Salah satu cara menangani missing value adalah melakukan imputation atau mengisi missing value dengan suatu nilai. Nilai yang dimaksud bisa berupa **konstanta** ataupun **pusat data**.
+
+```{r}
+customer_age <- c(20, 24, 25, NA, 19, 24, NA)
+customer_age
+```
+
+Gunakan parameter `na.rm = T` (na.remove) agar missing value di-remove saat menghitung nilai pusat data.
+
+```{r}
+mean(customer_age, na.rm = T)
+```
+
+```{r}
+customer_age[is.na(customer_age)] <- mean(customer_age, na.rm = T)
+customer_age
+```
