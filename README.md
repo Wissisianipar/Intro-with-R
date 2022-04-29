@@ -20,9 +20,9 @@ Fundamental of Data Viz
 
 Plotting Data in R with ggplot
 
-Case Study : - Alternative geom to show  distribution
-             - Analysis Case Study, transform  data to final viz
-             - Visualize Map with Leaflet
+Case Study (who_disease.csv) : - Alternative geom to show  distribution
+                            - Analysis Case Study, transform  data to final viz
+                          - Visualize Map with Leaflet
              
 ### Framework to decide which graph to use for showing distribution :
 ![image](https://user-images.githubusercontent.com/102803017/165907010-b3fde172-b05f-4f06-bdc0-34bff6a0ded7.png)
